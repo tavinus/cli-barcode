@@ -36,7 +36,7 @@ Usage is pretty straight forward.
 * Height of the bars (defaults to 30)
 * Color of the bars (defaults to black)
   
-I find the default settings for these very optimal, since there is usually no problem on resising the barcodes generated.
+I find the default settings for these very optimal, since there is usually no problem on resizing the barcodes generated.
 
 ## Help Information from cli
 ```
