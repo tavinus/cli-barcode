@@ -6,9 +6,9 @@ For command line parsing @ulrichsg's [getopt-php](https://github.com/ulrichsg/ge
 The credits should go mostly to them, since this is a very simple script that uses what they have made.  
 
 ## How to install
-The vendor folder is included since I want to be able to just download this package and install it.  
+The vendor folder is included since I want to be able to just download this package and run it.  
   
-You should download the zip or tarball and extract it / move it to where you want it to be instaled.  
+You should download the zip or tar ball and put the cli-barcode folder where you want it to be installed.  
 
 Then you can run:  
 ```
@@ -27,7 +27,7 @@ You will need to have `make` installed for this.
 Usage is pretty straight forward.  
 #####There are 4 required parameters  
 1. Encoding (barcode type)  
-2. Output format (jpg, svg, etc)  
+2. Output format (png, jpg, svg, html)  
 3. Barcode string (will become the barcode)  
 4. Output file (where to save it)  
 
@@ -36,8 +36,9 @@ Usage is pretty straight forward.
 * Height of the bars (defaults to 30)
 * Color of the bars (defaults to black)
   
-I find the default settings for these very optimal, since there is usually no problem on resizing the barcodes generated.
-
+I find the default settings for these very optimal, since there is usually no problem on resizing the barcodes generated.  
+The encodings and output formats are case-insenstive.  
+  
 ## Help Information from cli
 ```
 $ barcode --help
