@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+##################################################
+# Gustavo Arnosti Neves - 2016 Jul 11
+# Simple bash script for global barcode executable
+# PHP cli-barcode-generator
+#
+# Please run "./barcode.php --create-bash" to update this script
+# You can then use sudo make install to copy it to /usr/local/bin
+#
+# This won't work on windows
+#
+
+BARCODE_LOCATION="./barcode.php"   # enter full path here
+/usr/bin/env php "$BARCODE_LOCATION" "$@"
