@@ -25,13 +25,13 @@ You will need to have `make` installed for this.
   
 ## Generating barcodes
 Usage is pretty straight forward.  
-#####There are 4 required parameters  
+##### There are 4 required parameters  
 1. Encoding (barcode type)  
 2. Output format (png, jpg, svg, html)  
 3. Barcode string (will become the barcode)  
 4. Output file (where to save it)  
 
-#####Apart from that you get a few optional parameters
+##### Apart from that you get a few optional parameters
 * Width factor for the bars (defaults to 2)
 * Height of the bars (defaults to 30)
 * Color of the bars (defaults to black)
