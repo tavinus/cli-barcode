@@ -5,6 +5,9 @@ For command line parsing @ulrichsg's [getopt-php](https://github.com/ulrichsg/ge
   
 ## Generating barcodes
 Usage is pretty straight forward.  
+```
+barcode -e <encoding> -f <output_format> [options] <barcode string> <output file>
+```
 ##### There are 4 required parameters  
 1. Encoding (barcode type)  
 2. Output format (png, jpg, svg, html)  
