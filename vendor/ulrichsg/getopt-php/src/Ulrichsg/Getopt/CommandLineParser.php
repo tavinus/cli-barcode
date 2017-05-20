@@ -41,10 +41,15 @@ class CommandLineParser
                 continue;
             }
             if (($arg === '--') || ($arg === '-') || (mb_substr($arg, 0, 1) !== '-')){
-                // no more options, treat the remaining arguments as operands
-                $firstOperandIndex = ($arg == '--') ? $i + 1 : $i;
-                $operands = array_slice($arguments, $firstOperandIndex);
-                break;
+                // EDIT BY TAVINUS: Making execution not stop on operands, so we can have
+                // options being passed even after operands. Eg. myScript.php ./file -a
+                // not sure why processing '-' and '--', but only '--' is removed
+                // foreach loop few lines below seems necessary even when not adding '--'
+                // should we also test for '-'? Or should we not test for either at all?
+
+                // this is an operand, store and continue
+                if ($arg !== '--') $operands[] = $arguments[$i];
+                continue;
             }
             if (mb_substr($arg, 0, 2) == '--') {
                 $this->addLongOption($arguments, $i);
@@ -55,6 +60,7 @@ class CommandLineParser
 
         $this->addDefaultValues();
 
+        // EDIT BY TAVINUS: why we do this?
         // remove '--' from operands array
         foreach ($operands as $operand) {
             if ($operand !== '--') {

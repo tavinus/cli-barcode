@@ -14,10 +14,11 @@
 
 require_once 'vendor/autoload.php';
 
-define("_BC_VERSION",    "1.0.5");
+define("_BC_VERSION",     "1.0.6");
 
 # default padding for cli messages
-define("_BC_PADDING",     30);
+define("_BC_PADDING",      30);
+define("_BC_HELP_NEWLINE", "\n                               ");
 
 $verbose = false;
 $quiet   = false;
@@ -77,8 +78,26 @@ $formats_list = array(
 );
 sort($formats_list);
 
+# Converts Hex Color to array(r, g, b, [a])
+function hexToRgb($hex) {
+   $hex      = str_replace('#', '', $hex);
+   $length   = strlen($hex);
+   $rgb[] = hexdec($length == 6 ? substr($hex, 0, 2) : ($length == 3 ? str_repeat(substr($hex, 0, 1), 2) : 0));
+   $rgb[] = hexdec($length == 6 ? substr($hex, 2, 2) : ($length == 3 ? str_repeat(substr($hex, 1, 1), 2) : 0));
+   $rgb[] = hexdec($length == 6 ? substr($hex, 4, 2) : ($length == 3 ? str_repeat(substr($hex, 2, 1), 2) : 0));
+   return $rgb;
+}
+
 
 /////////////////// PRINT HELP
+
+function getVersionString($suffix='') {
+	return "PHP-CLI Barcode v"._BC_VERSION.$suffix;
+}
+
+function printVersion($suffix='') {
+	echo getVersionString($suffix)."\n";
+}
 
 // prints help information
 function print_help($getopt) {
@@ -106,9 +125,9 @@ function print_help($getopt) {
 }
 
 
-/////////////////// CREATE BASH SCRIPT
+/////////////////// CREATE SH SCRIPT
 
-// creates a bash script named barcode that will run this script
+// creates a shell script named barcode that will run this script
 // from anywhere on the system. Assumes barcode.php is running
 // on its final installation location
 function create_bash_script() {
@@ -117,7 +136,7 @@ function create_bash_script() {
     $bash_path = dirname($bc_path) . DIRECTORY_SEPARATOR . "barcode";
 
     $bash_script = <<<EOF
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 ##################################################
 # Gustavo Arnosti Neves - 2016 Jul 11
@@ -177,13 +196,26 @@ function not_empty($str) {
     return (!empty($str));
 }
 
+// check if empty callback
+function isHexColor($str) {
+    $str = str_replace('#', '', $str);
+    if (! ctype_alnum($str) || (strlen($str) !== 6 && strlen($str) !== 3)) return false;
+    return true;
+}
+
+function checkQuietExit($exitStat=0) {
+    global $quiet;
+    if ($quiet) ob_end_clean();
+    exit($exitStat);
+}
+
 // define and configure options
 $getopt = new Getopt(array(
     (new Option('e', 'encoding', Getopt::REQUIRED_ARGUMENT))
-        ->setDescription('Barcode encoding type selection')
+        ->setDescription('Barcode encoding type selection, listed below')
         ->setArgument(new Argument(null, 'isEncoding', 'bar-type')),
     (new Option('f', 'format', Getopt::REQUIRED_ARGUMENT))
-        ->setDescription('Output format for the barcode')
+        ->setDescription('Output format for the barcode, listed below')
         ->setArgument(new Argument(null, 'isFormat', 'file-type')),
     (new Option('w', 'width', Getopt::REQUIRED_ARGUMENT))
         ->setDescription('Width factor for bars to make wider, defaults to 2')
@@ -192,20 +224,20 @@ $getopt = new Getopt(array(
         ->setDescription('Total height of the barcode, defaults to 30')
         ->setArgument(new Argument(30, 'is_numeric', 'points')),
     (new Option('c', 'color', Getopt::REQUIRED_ARGUMENT))
-        ->setDescription('Hex code of the foreground color, defaults to black')
-        ->setArgument(new Argument('#000000', 'not_empty', 'hex-color')),
+        ->setDescription('Hex code of the foreground color, defaults to black'._BC_HELP_NEWLINE."Eg. -c 54863b, or -c '#000'")
+        ->setArgument(new Argument('#000000', 'isHexColor', 'hex-color')),
     (new Option('v', 'verbose'))
-        ->setDescription('Display extra information')
+        ->setDescription('Prints verbose information to screen'._BC_HELP_NEWLINE."Use twice for timestamp")
         ->setDefaultValue(false),
     (new Option('q', 'quiet'))
-        ->setDescription('Supress all messages')
+        ->setDescription('Supress all messages, even errors')
         ->setDefaultValue(false),
     (new Option(null, 'help'))
         ->setDescription('Help Information, including encodings and formats'),
     (new Option(null, 'version'))
         ->setDescription('Display version information and exits'),
     (new Option(null, 'create-bash'))
-        ->setDescription('Creates a bash script named barcode that can call this script')
+        ->setDescription('Creates a shell script named \'barcode\' that can call this script')
 ));
 
 $getopt->setBanner("Usage: barcode -e <encoding> -f <output_format> [options] <barcode string> <output file>\n");
@@ -214,7 +246,7 @@ try {
     $getopt->parse();
 
     if ($getopt['version']) {
-        echo "PHP-CLI Barcode v"._BC_VERSION."\n";
+        printVersion();
         exit(0);
     }
 
@@ -236,7 +268,7 @@ try {
     
     $width     = $getopt['width'];
     $height    = $getopt['height'];
-    $color     = $getopt['color'];
+    $color     = '#'.str_replace('#', '', $getopt['color']);
 
     $bc_string = $getopt->getOperand(0);
     $bc_file   = $getopt->getOperand(1);
@@ -254,12 +286,51 @@ if (empty($encoding) || empty($format) || empty($bc_string) || empty($bc_file)) 
     exit(1);
 }
 
+// check output directory
+$tgtDir = dirname($bc_file);
+if (! is_dir($tgtDir)) {
+    echo "Error: Could not locate target directory!\nTarget Dir: $tgtDir\n";
+    exit(1);
+}
+
 // Match case
 $encoding = strtoupper($encoding);
 $format   = strtoupper($format);
 
 
+
+/////////////////// QUIET EXECUTION STARTS
+
+// From here on use checkQuietExit() to Exit
+if ($quiet) {
+    ob_start();
+}
+
 /////////////////// GETOPT ENDS
+
+
+/////////////////// PRINT VERBOSE INFO
+
+vPrint(getVersionString(" - Verbose Execution"));
+vPrint(array("Output File", "$bc_file"));
+vPrint(array("Barcode String", "$bc_string"));
+vPrint(array("Barcode Encoding", "$encoding"));
+vPrint(array("Output Format", "$format"));
+vPrint(array("Width Factor", "$width"));
+vPrint(array("Height of Barcode", "$height"));
+vPrint(array("Hex Color", "$color"));
+
+function vPrint($input) {
+    global $verbose;
+    if ($verbose) { 
+        if ($verbose > 1) echo date(DATE_ATOM) . " | ";
+        if (is_array($input) && count($input) > 1) {
+            printf("%-17s : %-30s\n", $input[0], $input[1]);
+        } else if (is_string($input)) {
+            echo "$input\n";
+        }
+    }
+}
 
 
 /////////////////// CREATE BARCODE STARTS
@@ -276,13 +347,16 @@ $generator = null;
 if ($format === 'SVG') {
     $generator = new Picqer\Barcode\BarcodeGeneratorSVG();
 } else if ($format === 'PNG') {
+    $color     = hexToRgb($color);
     $generator = new Picqer\Barcode\BarcodeGeneratorPNG();
 } else if ($format === 'JPG') {
+    $color     = hexToRgb($color);
     $generator = new Picqer\Barcode\BarcodeGeneratorJPG();
 } else if ($format === 'HTML') {
     $generator = new Picqer\Barcode\BarcodeGeneratorHTML();
 } else {
-    exit(1);
+    echo "Error: Invalid taget format: $format\n";
+    checkQuietExit(1);
 }
 
 // generate de barcode
@@ -290,20 +364,13 @@ try {
     $bc_data  = $generator->getBarcode($bc_string, $bc_type, $width, $height, $color);    
 } catch (Exception $e) {
     echo "Error: ".$e->getMessage()."\n";
-    exit(1);
-}
-
-// sanity check
-$tgtDir = dirname($bc_file);
-if (! is_dir($tgtDir)) {
-    echo "Error: Could not locate target directory!\nTarget Dir: $tgtDir\n";
-    exit(1);
+    checkQuietExit(1);
 }
 
 // save to file
 if (@file_put_contents($bc_file, $bc_data) === false) {
     echo "Error: could not save file $bc_file!\n";
-    exit(1);
+    checkQuietExit(1);
 }
 
 // set permissions and group
@@ -312,7 +379,10 @@ if (@file_put_contents($bc_file, $bc_data) === false) {
 
 /////////////////// CREATE BARCODE ENDS
 
-// done
-exit(0);
+
+/////////////////// PRINT VERBOSE INFO ENDS
+
+vprint(array("Final Status", "Success"));
+checkQuietExit(0);
 
 ?>
