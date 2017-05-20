@@ -92,16 +92,16 @@ function hexToRgb($hex) {
 /////////////////// PRINT HELP
 
 function getVersionString($suffix='') {
-	return "PHP-CLI Barcode v"._BC_VERSION.$suffix;
+    return "PHP-CLI Barcode v"._BC_VERSION.$suffix;
 }
 
 function printVersion($suffix='') {
-	echo getVersionString($suffix)."\n";
+    echo getVersionString($suffix)."\n";
 }
 
 // prints help information
 function print_help($getopt) {
-	printVersion();
+    printVersion();
     global $encodings_list;
     global $formats_list;
     
