@@ -18,6 +18,11 @@ Usage is pretty straight forward.
   
 I find the default settings for these very optimal, since there is usually no big penalty on resizing the barcodes generated.  
 The encodings and output formats are case-insenstive.  
+
+##### Important Notes
+From [v1.0.6](https://github.com/tavinus/cli-barcode/releases/tag/1.0.6) parameters and options can be passed in any order,  
+as long as the `Barcode String` comes before the `Output File`.  
+This requires my patched version of `getopt-php`.  
   
 ## Example Runs
 #### Blue Colored `CODE_128_C` SVG with "123123123123"
