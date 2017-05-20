@@ -117,11 +117,12 @@ Examples:
 
 
 ## How to install using `Make`
-The vendor folder is included since I want to be able to just download this package and run it.  
-I have also made some patches upstream on both `getopt-php` and `php-barcode-generator`.  
+The vendor folder is included so we can just download this package and run it.  
+I have also made some patches upstream to both `getopt-php` and `php-barcode-generator`.  
   
-You should download the zip or tar ball and put the cli-barcode folder where you want it to be installed.  
-Or use git to clone:
+You can download the zip or tar ball and put the cli-barcode folder where you want it to be installed.  
+  
+### Or use git to clone:
 ```
 git clone https://github.com/tavinus/cli-barcode.git $HOME/cli-barcode # <= Replace TARGET
 cd $HOME/cli-barcode # <= Replace TARGET
