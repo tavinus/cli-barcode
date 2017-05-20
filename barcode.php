@@ -14,7 +14,7 @@
 
 require_once 'vendor/autoload.php';
 
-define("_BC_VERSION",    "1.0.3");
+define("_BC_VERSION",    "1.0.4");
 
        # permission to set to barcode files
 define("_BC_PERMISSION",  0644);
@@ -80,6 +80,16 @@ $formats_list = array(
 sort($formats_list);
 
 
+function isEncoding($enc=null) {
+    global $encodings_list;
+	return in_array(strtoupper($enc), $encodings_list);
+}
+
+function isFormat($format=null) {
+    global $formats_list;
+	return in_array(strtoupper($format), $formats_list);
+}
+
 /////////////////// GETOPT STARTS
 
 use Ulrichsg\Getopt\Getopt;
@@ -90,18 +100,10 @@ use Ulrichsg\Getopt\Argument;
 $getopt = new Getopt(array(
     (new Option('e', 'encoding', Getopt::REQUIRED_ARGUMENT))
         ->setDescription('Barcode encoding type selection')
-        ->setValidation(function($value) {
-            global $encodings_list;
-            return in_array(strtoupper($value), $encodings_list);
-        })
-        ->setArgument(new Argument(null, null, 'bar-type')),
+        ->setArgument(new Argument(null, 'isEncoding', 'bar-type')),
     (new Option('f', 'format', Getopt::REQUIRED_ARGUMENT))
         ->setDescription('Output format for the barcode')
-        ->setValidation(function($value, $formats_list) {
-            global $formats_list;
-            return in_array(strtoupper($value), $formats_list);
-        })
-        ->setArgument(new Argument(null, null, 'file-type')),
+        ->setArgument(new Argument(null, 'isFormat', 'file-type')),
     (new Option('w', 'width', Getopt::REQUIRED_ARGUMENT))
         ->setDescription('Width factor for bars to make wider, defaults to 2')
         ->setArgument(new Argument(2, 'is_numeric', 'points')),
