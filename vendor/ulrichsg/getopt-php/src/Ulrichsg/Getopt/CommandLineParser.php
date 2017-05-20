@@ -48,7 +48,7 @@ class CommandLineParser
                 // should we also test for '-'? Or should we not test for either at all?
 
                 // this is an operand, store and continue
-                if ($arg !== '--') $operands[] = $arguments[$i];
+                if ($arg !== '--') $operands[] = $arg;
                 continue;
             }
             if (mb_substr($arg, 0, 2) == '--') {

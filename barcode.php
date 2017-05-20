@@ -14,7 +14,7 @@
 
 require_once 'vendor/autoload.php';
 
-define("_BC_VERSION",     "1.0.6");
+define("_BC_VERSION",     "1.0.7");
 
 # default padding for cli messages
 define("_BC_PADDING",      30);
