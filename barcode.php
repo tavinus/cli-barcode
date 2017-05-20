@@ -14,14 +14,14 @@
 
 require_once 'vendor/autoload.php';
 
-define("_BC_VERSION",    "1.0.2");
+define("_BC_VERSION",    "1.0.3");
 
        # permission to set to barcode files
 define("_BC_PERMISSION",  0644);
        # group to set to barcode files (disabled at bot)
 define("_BC_SYSGROUP",   "yourGrpHere");
        # default padding for barcode
-define("_BC_PADDING",     30); 
+define("_BC_PADDING",     30);
 
 
 $verbose = false;

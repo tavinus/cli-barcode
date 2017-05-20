@@ -17,7 +17,7 @@
         "require": {
             "php": ">=5.4.0"
         },
-        "time": "2015-08-13 07:59:44",
+        "time": "2015-08-13T07:59:44+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -83,7 +83,7 @@
         "require-dev": {
             "phpunit/phpunit": "3.7.*"
         },
-        "time": "2015-03-28 14:09:20",
+        "time": "2015-03-28T14:09:20+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
