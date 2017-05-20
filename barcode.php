@@ -101,6 +101,7 @@ function printVersion($suffix='') {
 
 // prints help information
 function print_help($getopt) {
+	printVersion();
     global $encodings_list;
     global $formats_list;
     
