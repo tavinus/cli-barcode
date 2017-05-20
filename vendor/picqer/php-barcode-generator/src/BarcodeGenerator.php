@@ -2812,6 +2812,7 @@ abstract class BarcodeGenerator
 
     protected function convertBarcodeArrayToNewStyle($oldBarcodeArray)
     {
+        if (empty($oldBarcodeArray['bcode'])) throw new \Exception("Could not process barcode! Seems like your barcode string is invalid for the proposed format.");
         $newBarcodeArray = [];
         $newBarcodeArray['code'] = $oldBarcodeArray['code'];
         $newBarcodeArray['maxWidth'] = $oldBarcodeArray['maxw'];

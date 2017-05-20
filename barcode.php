@@ -14,15 +14,10 @@
 
 require_once 'vendor/autoload.php';
 
-define("_BC_VERSION",    "1.0.4");
+define("_BC_VERSION",    "1.0.5");
 
-       # permission to set to barcode files
-define("_BC_PERMISSION",  0644);
-       # group to set to barcode files (disabled at bot)
-define("_BC_SYSGROUP",   "yourGrpHere");
-       # default padding for barcode
+# default padding for cli messages
 define("_BC_PADDING",     30);
-
 
 $verbose = false;
 $quiet   = false;
@@ -36,6 +31,9 @@ $bc_file   = null;
 $width     = 2;
 $height    = 30;
 $color     = '#000000';
+
+#$_defPermission = $false; # to be implemented
+#$_defGroup = $false;      # to be implemented
 
 $encodings_list = array(
     'CODE_39',
@@ -80,11 +78,104 @@ $formats_list = array(
 sort($formats_list);
 
 
+/////////////////// PRINT HELP
+
+// prints help information
+function print_help($getopt) {
+    global $encodings_list;
+    global $formats_list;
+    
+    echo $getopt->getHelpText(_BC_PADDING);
+    echo "\nRequired Options and Parameters:\n";
+    echo "    -e <encoding>\n";
+    echo "    -f <output format>\n";
+    echo "    <input string>\n";
+    echo "    <output file>\n";
+    echo "\nOutput Formats:\n";
+    foreach($formats_list as $for) {
+        echo "    $for\n";
+    }
+    echo "\nEncodings:\n";
+    foreach($encodings_list as $enc) {
+        echo "    $enc\n";
+    }
+    echo "\nExamples:\n";
+    echo "    barcode -f HTML -e CODE_39 \"1234567890\" \"/tmp/1234567890.html\"\n";
+    echo "    barcode -e CODE_128 -f PNG -c \"#888\" -w 3 -h 50 \"AGREATBAR\" \"/tmp/AGREATBAR.png\"\n";
+    echo "    barcode \"1234567890\" \"/tmp/mybar.svg\" --encoding EAN_13 --format SVG\n";
+}
+
+
+/////////////////// CREATE BASH SCRIPT
+
+// creates a bash script named barcode that will run this script
+// from anywhere on the system. Assumes barcode.php is running
+// on its final installation location
+function create_bash_script() {
+    $error = true;
+    $bc_path = __FILE__;
+    $bash_path = dirname($bc_path) . DIRECTORY_SEPARATOR . "barcode";
+
+    $bash_script = <<<EOF
+#!/usr/bin/env bash
+
+##################################################
+# Gustavo Arnosti Neves - 2016 Jul 11
+# Simple bash script for global barcode executable
+# PHP cli-barcode-generator
+#
+# Please run "./barcode.php --create-bash" to update this script
+# You can then use sudo make install to copy it to /usr/local/bin
+#
+# This won't work on windows
+#
+
+BARCODE_LOCATION="$bc_path"   # enter full path here
+/usr/bin/env php "\$BARCODE_LOCATION" "\$@"
+
+EOF;
+
+    if (file_exists($bash_path)) {
+        unlink($bash_path) or die("Could not remove old barcode script, are you running from it?");
+    }
+
+    $error = file_put_contents($bash_path, $bash_script) === true ? false : true;
+    $error = chmod($bash_path, 0755) === true ? false : true;
+    
+    if ($error) {
+        echo "\nAn error was detected during the process.\n";
+        echo "Please check for permissions and try again.\n\n";
+        exit(2);
+    }
+    echo "\nThe file \"$bash_path\" was successfully created.\n";
+    echo "You may perform a system install to /usr/local/bin by issuing\n"; 
+    echo "the command \"sudo make install\"\n\n";
+    exit(0);
+}
+
+
 /////////////////// GETOPT STARTS
 
 use Ulrichsg\Getopt\Getopt;
 use Ulrichsg\Getopt\Option;
 use Ulrichsg\Getopt\Argument;
+
+// check if encoding callback
+function isEncoding($enc=null) {
+    global $encodings_list;
+    return in_array(strtoupper($enc), $encodings_list);
+}
+
+// check if format callback
+function isFormat($format=null) {
+    global $formats_list;
+    return in_array(strtoupper($format), $formats_list);
+}
+
+// check if empty callback
+function not_empty($str) {
+    return (!empty($str));
+}
 
 // define and configure options
 $getopt = new Getopt(array(
@@ -171,52 +262,7 @@ $format   = strtoupper($format);
 /////////////////// GETOPT ENDS
 
 
-/////////////////// CREATE BARCODE
-
-// creates a bash script named barcode that will run this script
-// from anywhere on the system. Assumes barcode.php is running
-// on its final installation location
-function create_bash_script() {
-    $error = true;
-    $bc_path = __FILE__;
-    $bash_path = dirname($bc_path) . DIRECTORY_SEPARATOR . "barcode";
-
-    $bash_script = <<<EOF
-#!/usr/bin/env bash
-
-##################################################
-# Gustavo Arnosti Neves - 2016 Jul 11
-# Simple bash script for global barcode executable
-# PHP cli-barcode-generator
-#
-# Please run "./barcode.php --create-bash" to update this script
-# You can then use sudo make install to copy it to /usr/local/bin
-#
-# This won't work on windows
-#
-
-BARCODE_LOCATION="$bc_path"   # enter full path here
-/usr/bin/env php "\$BARCODE_LOCATION" "\$@"
-
-EOF;
-
-    if (file_exists($bash_path)) {
-        unlink($bash_path) or die("Could not remove old barcode script, are you running from it?");
-    }
-
-    $error = file_put_contents($bash_path, $bash_script) === true ? false : true;
-    $error = chmod($bash_path, 0755) === true ? false : true;
-    
-    if ($error) {
-        echo "\nAn error was detected during the process.\n";
-        echo "Please check for permissions and try again.\n\n";
-        exit(2);
-    }
-    echo "\nThe file \"$bash_path\" was successfully created.\n";
-    echo "You may perform a system install to /usr/local/bin by issuing\n"; 
-    echo "the command \"sudo make install\"\n\n";
-    exit(0);
-}
+/////////////////// CREATE BARCODE STARTS
 
 // get actual barcode type string
 $bc_type  = constant('Picqer\Barcode\BarcodeGenerator::TYPE_'.$encoding);
@@ -240,7 +286,12 @@ if ($format === 'SVG') {
 }
 
 // generate de barcode
-$bc_data  = $generator->getBarcode($bc_string, $bc_type, $width, $height, $color);
+try {
+    $bc_data  = $generator->getBarcode($bc_string, $bc_type, $width, $height, $color);    
+} catch (Exception $e) {
+    echo "Error: ".$e->getMessage()."\n";
+    exit(1);
+}
 
 // sanity check
 $tgtDir = dirname($bc_file);
@@ -256,52 +307,10 @@ if (@file_put_contents($bc_file, $bc_data) === false) {
 }
 
 // set permissions and group
-chmod($bc_file, _BC_PERMISSION);
-#chgrp($bc_file, _BC_SYSGROUP);
+#chmod($bc_file, $_defPermission);
+#chgrp($bc_file, $_defGroup);
 
-
-// prints help information
-function print_help($getopt) {
-    global $encodings_list;
-    global $formats_list;
-    
-    echo $getopt->getHelpText(_BC_PADDING);
-    echo "\nRequired Options and Parameters:\n";
-    echo "    -e <encoding>\n";
-    echo "    -f <output format>\n";
-    echo "    <input string>\n";
-    echo "    <output file>\n";
-    echo "\nOutput Formats:\n";
-    foreach($formats_list as $for) {
-        echo "    $for\n";
-    }
-    echo "\nEncodings:\n";
-    foreach($encodings_list as $enc) {
-        echo "    $enc\n";
-    }
-    echo "\nExamples:\n";
-    echo "    barcode -f HTML -e CODE_39 \"1234567890\" \"/tmp/1234567890.html\"\n";
-    echo "    barcode -e CODE_128 -f PNG -c \"#888\" -w 3 -h 50 \"AGREATBAR\" \"/tmp/AGREATBAR.png\"\n";
-    echo "    barcode \"1234567890\" \"/tmp/mybar.svg\" --encoding EAN_13 --format SVG\n";
-}
-
-// check if encoding callback
-function isEncoding($enc=null) {
-    global $encodings_list;
-    return in_array(strtoupper($enc), $encodings_list);
-}
-
-// check if format callback
-function isFormat($format=null) {
-    global $formats_list;
-    return in_array(strtoupper($format), $formats_list);
-}
-
-// check if empty callback
-function not_empty($str) {
-    return (!empty($str));
-}
-
+/////////////////// CREATE BARCODE ENDS
 
 // done
 exit(0);
