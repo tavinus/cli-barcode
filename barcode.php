@@ -80,16 +80,6 @@ $formats_list = array(
 sort($formats_list);
 
 
-function isEncoding($enc=null) {
-    global $encodings_list;
-	return in_array(strtoupper($enc), $encodings_list);
-}
-
-function isFormat($format=null) {
-    global $formats_list;
-	return in_array(strtoupper($format), $formats_list);
-}
-
 /////////////////// GETOPT STARTS
 
 use Ulrichsg\Getopt\Getopt;
@@ -191,7 +181,7 @@ function create_bash_script() {
     $bc_path = __FILE__;
     $bash_path = dirname($bc_path) . DIRECTORY_SEPARATOR . "barcode";
 
-	$bash_script = <<<EOF
+    $bash_script = <<<EOF
 #!/usr/bin/env bash
 
 ##################################################
@@ -252,8 +242,15 @@ if ($format === 'SVG') {
 // generate de barcode
 $bc_data  = $generator->getBarcode($bc_string, $bc_type, $width, $height, $color);
 
+// sanity check
+$tgtDir = dirname($bc_file);
+if (! is_dir($tgtDir)) {
+    echo "Error: Could not locate target directory!\nTarget Dir: $tgtDir\n";
+    exit(1);
+}
+
 // save to file
-if (file_put_contents($bc_file, $bc_data) === false) {
+if (@file_put_contents($bc_file, $bc_data) === false) {
     echo "Error: could not save file $bc_file!\n";
     exit(1);
 }
@@ -288,7 +285,19 @@ function print_help($getopt) {
     echo "    barcode \"1234567890\" \"/tmp/mybar.svg\" --encoding EAN_13 --format SVG\n";
 }
 
-// check if empty (callback)
+// check if encoding callback
+function isEncoding($enc=null) {
+    global $encodings_list;
+    return in_array(strtoupper($enc), $encodings_list);
+}
+
+// check if format callback
+function isFormat($format=null) {
+    global $formats_list;
+    return in_array(strtoupper($format), $formats_list);
+}
+
+// check if empty callback
 function not_empty($str) {
     return (!empty($str));
 }
