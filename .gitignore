@@ -39,4 +39,8 @@ composer.phar
 ehthumbs.db
 Thumbs.db
 
+# Arquivos locais Arnosti Transportes
+code128c2svg
+code128c2svg.php
+
 
