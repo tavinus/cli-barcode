@@ -1,6 +1,6 @@
 # cli-barcode PHP
 ### Current version [1.0.7](https://github.com/tavinus/cli-barcode/releases/tag/1.0.7)
-Generates awesome barcodes from CLI using PHP  
+Create awesome barcodes from CLI using PHP.  
 This script uses @picqer's [php-barcode-generator](https://github.com/picqer/php-barcode-generator) to generate barcodes from the command line.  
 For command line parsing @ulrichsg's [getopt-php](https://github.com/ulrichsg/getopt-php) is used.  
 ## Generating barcodes
