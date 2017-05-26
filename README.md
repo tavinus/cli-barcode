@@ -128,7 +128,7 @@ Examples:
 The vendor folder is included so we can just download this package and run it.  
 I have also made some patches upstream to both `getopt-php` and `php-barcode-generator`.  
   
-You can [download the zip](https://github.com/tavinus/cli-barcode/archive/master.zip) or tar ball and put the cli-barcode folder where you want it to be installed.  
+You can [download the zip](https://github.com/tavinus/cli-barcode/archive/master.zip) or [tarball](https://github.com/tavinus/cli-barcode/archive/master.tar.gz) and put the cli-barcode folder where you want it to be installed.  
   
 ### Or use git to clone:
 ```
