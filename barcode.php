@@ -14,7 +14,7 @@
 
 require_once 'vendor/autoload.php';
 
-define("_BC_VERSION",     "1.0.7");
+define("_BC_VERSION",     "1.0.8");
 
 # default padding for cli messages
 define("_BC_PADDING",      30);
@@ -340,8 +340,8 @@ function vPrint($input) {
 $bc_type  = constant('Picqer\Barcode\BarcodeGenerator::TYPE_'.$encoding);
 
 // add trailling zero if odd digits on Code128C
-$bc_string = strlen($bc_string) % 2 == 0 && $encoding === 'CODE_128_C'? 
-    $bc_string : '0'.$bc_string;
+$bc_string = strlen($bc_string) % 2 != 0 && $encoding === 'CODE_128_C'?
+    '0'.$bc_string : $bc_string;
 
 // create appropriate generator
 $generator = null;
